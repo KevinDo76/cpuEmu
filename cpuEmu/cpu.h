@@ -14,14 +14,14 @@ public:
 		NOP, // no oprand
 		PCALL, // no oprand, use ra register
 		PRET, // no oprand
-		RDMSR, //
-		WRMSR, //
-		READIMM4,
-		READIMM2,
-		READIMM1,
-		READPTR4,
-		READPTR2,
-		READPTR1,
+		//RDMSR, //
+		//WRMSR, //
+		READIMM4, // address / reg
+		READIMM2, // address / reg
+		READIMM1, // address / reg
+		READPTR4, // ptr reg / result reg
+		READPTR2, // ptr reg / result reg
+		READPTR1,// ptr reg / result reg
 		WRITEIMM4,
 		WRITEIMM2,
 		WRITEIMM1,
