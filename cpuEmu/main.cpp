@@ -3,5 +3,14 @@
 
 int main()
 {
-	std::cout << "Hello World!\n";
+	cpu CPU;
+	CPU.loadBinaryImage("program.bin");
+	CPU.clockTick();
+	CPU.clockTick();
+	CPU.clockTick();
+	CPU.clockTick();
+	CPU.clockTick();
+	CPU.clockTick();
+	CPU.clockTick();
+	return 0;
 }

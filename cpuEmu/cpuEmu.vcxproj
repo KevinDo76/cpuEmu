@@ -133,6 +133,9 @@
   <ItemGroup>
     <ClInclude Include="cpu.h" />
   </ItemGroup>
+  <ItemGroup>
+    <None Include="program.bin" />
+  </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">
   </ImportGroup>
