@@ -55,7 +55,7 @@ public:
 		JMPIF      = 0x1d,	  // arg1: Reg Index Check(jump if register is not zero) / arg2: Reg Index Jump Value
 		JMPREL     = 0x1e,	  // arg1: Reg Index Value<signed>
 		JMPRELIF   = 0x1f,	  // arg1: Reg Index Check(jump if register is not zero) / arg2: Reg Index Jump Value<signed>
-		OUT        = 0x20,    // arg1: Reg Index Value / arg2: Address<32>
+/*Done*/OUT        = 0x20,    // arg1: Reg Index Value / arg2: Address<32>
 		IN         = 0x21,    // arg1: Reg Index Result / arg2: Address<32>
 		INT        = 0x22,	  // no oprands, take code from reg RA;
 /*Done*/HALT       = 0x23,	  // no oprand
@@ -75,7 +75,12 @@ private:
 	uint32_t readGeneralRegister(int index);
 	void writeGeneralRegister(int index, uint32_t value);
 	void incrementAndFetch(instructionData& instructionObj);
+
+
+	void handleOutInstruction(instructionData& instructionObj);
+
 	bool decodeAndExecute(instructionData& instructionObj);
+	uint8_t readMemory8(uint32_t address);
 
 	uint32_t RA; // General Purpose Register
 	uint32_t RB; // General Purpose Register

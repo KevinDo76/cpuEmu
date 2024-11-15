@@ -108,6 +108,7 @@ std::string cpu::instructionEnumToName(instructions instr)
 void cpu::cpuDebugCheck()
 {
 	clockHalted = true;
+	std::cout << "\nCPU debug check\n";
 }
 
 uint32_t cpu::readGeneralRegister(int index)
@@ -184,6 +185,15 @@ instructionData::instructionData(cpu::instructions _instr, uint32_t _oprandA, ui
 	: instr(_instr), oprandA(_oprandA), oprandB(_oprandB), oprandC(_oprandC)
 {}
 
+void cpu::handleOutInstruction(instructionData& instructionObj)
+{
+	switch (instructionObj.oprandB)
+	{
+	case 0:
+		std::cout << (char)(readGeneralRegister(instructionObj.oprandA) & 0xFF);
+	}
+}
+
 bool cpu::decodeAndExecute(instructionData& instructionObj)
 {
 	switch (instructionObj.instr)
@@ -199,6 +209,25 @@ bool cpu::decodeAndExecute(instructionData& instructionObj)
 	case instructions::HALT:
 		clockHalted = true;
 		break;
+	case instructions::OUT:
+		handleOutInstruction(instructionObj);
+		break;
+	case instructions::READPTR1: // arg1: Reg Index PTR / arg2: Reg Index Ouput
+		writeGeneralRegister(readGeneralRegister(instructionObj.oprandB), readMemory8(readGeneralRegister(instructionObj.oprandA)));
+		break;
+	default:
+		cpuDebugCheck();
+		break;
 	}
 	return true;
+}
+
+uint8_t cpu::readMemory8(uint32_t address)
+{
+	if (address < CPU_AVALIABLE_MEMORY)
+	{
+		return memoryArray[address];
+	}
+	cpuDebugCheck();
+	return 0;
 }
