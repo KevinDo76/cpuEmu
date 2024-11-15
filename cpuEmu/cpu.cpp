@@ -146,6 +146,7 @@ void cpu::writeGeneralRegister(int index, uint32_t value)
 		RD = value;
 		break;
 	default:
+		std::cout << "Illegal: " << index << " value: " << value << "\n";
 		cpuDebugCheck();
 		return;
 	}
@@ -213,7 +214,16 @@ bool cpu::decodeAndExecute(instructionData& instructionObj)
 		handleOutInstruction(instructionObj);
 		break;
 	case instructions::READPTR1: // arg1: Reg Index PTR / arg2: Reg Index Ouput
-		writeGeneralRegister(readGeneralRegister(instructionObj.oprandB), readMemory8(readGeneralRegister(instructionObj.oprandA)));
+		writeGeneralRegister(instructionObj.oprandB, readMemory8(readGeneralRegister(instructionObj.oprandA)));
+		break;
+	case instructions::ADD:
+		writeGeneralRegister(instructionObj.oprandA, readGeneralRegister(instructionObj.oprandB) + readGeneralRegister(instructionObj.oprandC));
+		break;
+	case instructions::JMPIMM:
+		if (instructionObj.oprandA < CPU_AVALIABLE_MEMORY)
+		{
+			PC = instructionObj.oprandA;
+		}
 		break;
 	default:
 		cpuDebugCheck();

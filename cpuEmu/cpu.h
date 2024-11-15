@@ -33,7 +33,7 @@ public:
 		READIMM1   = 0x07,    // arg1: Reg Index Result / arg2: Address<32>
 		READPTR4   = 0x08,    // arg1: Reg Index PTR / arg2: Reg Index Ouput
 		READPTR2   = 0x09,    // arg1: Reg Index PTR / arg2: Reg Index Ouput
-		READPTR1   = 0x0a,    // arg1: Reg Index PTR / arg2: Reg Index Ouput
+/*Done*/READPTR1 = 0x0a,    // arg1: Reg Index PTR / arg2: Reg Index Ouput
 		WRITEIMM4  = 0x0b,    // arg1: Reg Index Value / arg2: Address<32>
 		WRITEIMM2  = 0x0c,	  // arg1: Reg Index Value / arg2: Address<32>
 		WRITEIMM1  = 0x0d,	  // arg1: Reg Index Value / arg2: Address<32>
