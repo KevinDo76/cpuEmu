@@ -1,5 +1,6 @@
 #include <stdint.h>
 #include <string>
+#include <sstream>
 #include <iostream>
 #include <fstream>
 #include "cpu.h" 
@@ -29,10 +30,15 @@ bool cpu::clockTick()
 
 bool cpu::loadBinaryImage(std::string path)
 {
-	std::ifstream binFile(path);
-	if (!binFile.good()) { return false; }
+	std::ifstream binFile(path, std::ios::in | std::ios::binary);
+	if (!binFile.is_open()) { return false; }
 	binFile.read((char*)memoryArray, CPU_AVALIABLE_MEMORY);
 	return true;
+}
+
+bool cpu::getHaltState()
+{
+	return clockHalted;
 }
 
 
@@ -105,10 +111,10 @@ std::string cpu::instructionEnumToName(instructions instr)
 	}
 }
 
-void cpu::cpuDebugCheck()
+void cpu::cpuDebugCheck(std::string errorMessage)
 {
 	clockHalted = true;
-	std::cout << "\nCPU debug check\n";
+	std::cout << "\nCPU debug check\n" << errorMessage;
 }
 
 uint32_t cpu::readGeneralRegister(int index)
@@ -124,7 +130,9 @@ uint32_t cpu::readGeneralRegister(int index)
 	case 3:
 		return RD;
 	default:
-		cpuDebugCheck();
+		std::stringstream errorMessage;
+		errorMessage << "Register read: Illegal register value, index: " << index;
+		cpuDebugCheck(errorMessage.str());
 		return 0;
 	}
 }
@@ -145,9 +153,20 @@ void cpu::writeGeneralRegister(int index, uint32_t value)
 	case 3:
 		RD = value;
 		break;
+	case 4:
+		CMPREG = (uint8_t)value;
+		break;
+	case 5:
+		SP = value;
+		break;
+	case 6:
+		BP = value;
+		break;
 	default:
-		std::cout << "Illegal: " << index << " value: " << value << "\n";
-		cpuDebugCheck();
+		//std::cout << "Illegal: " << index << " value: " << value << "\n";
+		std::stringstream errorMessage;
+		errorMessage << "Register write: Illegal register value, index: " << index << " value: " << value;
+		cpuDebugCheck(errorMessage.str());
 		return;
 	}
 }
@@ -156,10 +175,10 @@ void cpu::incrementAndFetch(instructionData& instructionObj)
 {
 	if (this->PC > CPU_AVALIABLE_MEMORY - 16)
 	{
-		cpuDebugCheck();
+		cpuDebugCheck("PC overflow");
 		return;
 	}
-
+	
 	instructionObj.instr = (instructions)((this->memoryArray[PC]) | (this->memoryArray[PC + 1] << 8) | (this->memoryArray[PC + 2] << 16) | (this->memoryArray[PC + 3] << 24));
 	instructionObj.oprandA = (instructions)((this->memoryArray[PC+4]) | (this->memoryArray[PC + 5] << 8) | (this->memoryArray[PC + 6] << 16) | (this->memoryArray[PC + 7] << 24));
 	instructionObj.oprandB = (instructions)((this->memoryArray[PC+8]) | (this->memoryArray[PC + 9] << 8) | (this->memoryArray[PC + 10] << 16) | (this->memoryArray[PC + 11] << 24));
@@ -186,6 +205,36 @@ instructionData::instructionData(cpu::instructions _instr, uint32_t _oprandA, ui
 	: instr(_instr), oprandA(_oprandA), oprandB(_oprandB), oprandC(_oprandC)
 {}
 
+void cpu::handleCMPInstruction(instructionData& instructionObj)
+{
+	bool result = false;
+	switch (CMPREG)
+	{
+	case CMPenum::EQUAL:
+		result = readGeneralRegister(instructionObj.oprandB) == readGeneralRegister(instructionObj.oprandC);
+		break;
+	case CMPenum::GREATER_THAN:
+		result = readGeneralRegister(instructionObj.oprandB) > readGeneralRegister(instructionObj.oprandC);
+		break;
+	case CMPenum::GREATER_THAN_OR_EQUAL:
+		result = readGeneralRegister(instructionObj.oprandB) >= readGeneralRegister(instructionObj.oprandC);
+		break;
+	case CMPenum::LESS_THAN:
+		result = readGeneralRegister(instructionObj.oprandB) < readGeneralRegister(instructionObj.oprandC);
+		break;
+	case CMPenum::LESS_THAN_OR_EQUAL:
+		result = readGeneralRegister(instructionObj.oprandB) <= readGeneralRegister(instructionObj.oprandC);
+		break;
+	case CMPenum::NOT_EQUAL:
+		result = readGeneralRegister(instructionObj.oprandB) != readGeneralRegister(instructionObj.oprandC);
+		break;
+	default:
+		cpuDebugCheck("Unknown cmp value");
+	}
+
+	writeGeneralRegister(instructionObj.oprandA, (uint32_t)result);
+}
+
 void cpu::handleOutInstruction(instructionData& instructionObj)
 {
 	switch (instructionObj.oprandB)
@@ -197,15 +246,30 @@ void cpu::handleOutInstruction(instructionData& instructionObj)
 
 bool cpu::decodeAndExecute(instructionData& instructionObj)
 {
+	uint32_t address;
 	switch (instructionObj.instr)
 	{
+	case instructions::JMPIF:
+		address = readGeneralRegister(instructionObj.oprandB);
+		if (address < CPU_AVALIABLE_MEMORY && readGeneralRegister(instructionObj.oprandA))
+		{
+			PC = address;
+		}
+		break;
+	case instructions::CMP:
+		handleCMPInstruction(instructionObj);
+		break;
 	case instructions::MOV:
 		writeGeneralRegister(instructionObj.oprandA, instructionObj.oprandB);
 		break;
 	case instructions::NOP:
 		break;
 	case instructions::JMP:
-		PC = readGeneralRegister(instructionObj.oprandA);
+		address = readGeneralRegister(instructionObj.oprandA);
+		if (address < CPU_AVALIABLE_MEMORY)
+		{
+			PC = address;
+		}
 		break;
 	case instructions::HALT:
 		clockHalted = true;
@@ -214,7 +278,7 @@ bool cpu::decodeAndExecute(instructionData& instructionObj)
 		handleOutInstruction(instructionObj);
 		break;
 	case instructions::READPTR1: // arg1: Reg Index PTR / arg2: Reg Index Ouput
-		writeGeneralRegister(instructionObj.oprandB, readMemory8(readGeneralRegister(instructionObj.oprandA)));
+		writeGeneralRegister(instructionObj.oprandA, readMemory8(readGeneralRegister(instructionObj.oprandB)));
 		break;
 	case instructions::ADD:
 		writeGeneralRegister(instructionObj.oprandA, readGeneralRegister(instructionObj.oprandB) + readGeneralRegister(instructionObj.oprandC));
@@ -226,7 +290,7 @@ bool cpu::decodeAndExecute(instructionData& instructionObj)
 		}
 		break;
 	default:
-		cpuDebugCheck();
+		cpuDebugCheck("Unknown instruction");
 		break;
 	}
 	return true;
@@ -238,6 +302,6 @@ uint8_t cpu::readMemory8(uint32_t address)
 	{
 		return memoryArray[address];
 	}
-	cpuDebugCheck();
+	cpuDebugCheck("Memory out of bound");
 	return 0;
 }
