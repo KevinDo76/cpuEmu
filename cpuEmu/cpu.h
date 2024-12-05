@@ -23,10 +23,10 @@ public:
 
 	enum instructions {
 /*Done*/NOP        = 0x00,    // no oprand
-		CALL       = 0x01,    // arg1: Address<32>, push PC to Stack
-		RET        = 0x02,    // no oprand, pull PC from Stack
-		POP        = 0x03,	  // arg1: Reg Index Result
-		PUSH       = 0x04,	  // arg1: Reg Index Value
+/*Done*/CALL       = 0x01,    // arg1: Address<32>, push PC to Stack
+/*Done*/RET        = 0x02,    // no oprand, pull PC from Stack
+/*Done*/POP        = 0x03,	  // arg1: Reg Index Result
+/*Done*/PUSH       = 0x04,	  // arg1: Reg Index Value
 		//RDMSR,  //
 		//WRMSR,  //
 		READIMM4   = 0x05,	  // arg1: Reg Index Result / arg2: Address<32>
@@ -41,7 +41,7 @@ public:
 		WRITEPTR4  = 0x0e,	  // arg1: Reg Index PTR / arg2: Reg Index Value
 		WRITEPTR2  = 0x0f,	  // arg1: Reg Index PTR / arg2: Reg Index Value
 		WRITEPTR1  = 0x10,	  // arg1: Reg Index PTR / arg2: Reg Index Value
-/*done*/ADD = 0x11,	  // arg1: Reg Index Result / arg2: Reg Index Oprand A / arg3: Reg Index Oprand B
+/*done*/ADD        = 0x11,	  // arg1: Reg Index Result / arg2: Reg Index Oprand A / arg3: Reg Index Oprand B
 		ADDI       = 0x12,	  // arg1: Reg Index Result / arg2: Reg Index Oprand A / arg3: Reg Index Oprand B
 		MUL        = 0x13,	  // arg1: Reg Index Result / arg2: Reg Index Oprand A / arg3: Reg Index Oprand B
 		LSHIFT	   = 0x14,    // arg1: Reg Index Result / arg2: Reg Index Oprand / arg3: Reg Index Amount
@@ -66,6 +66,9 @@ public:
 
 	static uint32_t flipEndian(uint32_t n);
 	static uint16_t flipEndian(uint16_t n);
+
+	uint32_t popStack();
+	void pushStack(uint32_t value);
 
 private:
 

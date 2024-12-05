@@ -111,6 +111,29 @@ std::string cpu::instructionEnumToName(instructions instr)
 	}
 }
 
+uint32_t cpu::popStack()
+{
+	uint32_t value = 0;
+	for (int i = 0; i < 4; i++)
+	{
+		SP--;
+		value = (value >> 8 ) | (memoryArray[BP - SP]<<24);
+	}
+	
+	return value;
+}
+
+void cpu::pushStack(uint32_t value)
+{
+	//value = flipEndian(value);
+	for (int i = 0; i < 4; i++)
+	{
+		memoryArray[BP - SP] = (value & 0xff000000)>>24;
+		SP++;
+		value = value << 8;
+	}
+}
+
 void cpu::cpuDebugCheck(std::string errorMessage)
 {
 	clockHalted = true;
@@ -249,6 +272,19 @@ bool cpu::decodeAndExecute(instructionData& instructionObj)
 	uint32_t address;
 	switch (instructionObj.instr)
 	{
+	case instructions::RET:
+		PC = popStack();
+		break;
+	case instructions::CALL:
+		pushStack(PC);
+		PC = instructionObj.oprandA;
+		break;
+	case instructions::PUSH:
+		pushStack(readGeneralRegister(instructionObj.oprandA));
+		break;
+	case instructions::POP:
+		writeGeneralRegister(instructionObj.oprandA, popStack());
+		break;
 	case instructions::JMPIF:
 		address = readGeneralRegister(instructionObj.oprandB);
 		if (address < CPU_AVALIABLE_MEMORY && readGeneralRegister(instructionObj.oprandA))
@@ -290,7 +326,9 @@ bool cpu::decodeAndExecute(instructionData& instructionObj)
 		}
 		break;
 	default:
-		cpuDebugCheck("Unknown instruction");
+		std::stringstream errorStream;
+		errorStream << "Unknown instruction: " << instructionObj.instr;
+		cpuDebugCheck(errorStream.str());
 		break;
 	}
 	return true;
