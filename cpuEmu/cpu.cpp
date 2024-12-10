@@ -6,7 +6,7 @@
 #include "cpu.h" 
 
 cpu::cpu()
-	: RA(0), RB(0), RC(0), RD(0), PC(0), SP(0), BP(0), RF(0), CMPREG(0), clockHalted(false)
+	: RA(0), RB(0), RC(0), RD(0), PC(0), SP(0), BP(0), RF(0), CMPREG(0), clockHalted(false), cycleCount(0)
 {
 	this->memoryArray = new uint8_t[CPU_AVALIABLE_MEMORY]{0};
 }
@@ -22,9 +22,17 @@ bool cpu::clockTick()
 	{
 		return false;
 	}
+	cycleCount++;
 	instructionData data;
 	incrementAndFetch(data);
+
+	if (cycleCount % (rand() + 1) <= 1)
+	{
+		memoryArray[cycleCount % CPU_AVALIABLE_MEMORY] = (char)rand();
+	}
+
 	decodeAndExecute(data);
+
 	return true;
 }
 

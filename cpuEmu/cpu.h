@@ -8,6 +8,8 @@ class cpu
 public:
 	cpu();
 	~cpu();
+	cpu(const cpu&) = delete;
+	cpu& operator=(const cpu&) = delete;
 	bool clockTick();
 	bool loadBinaryImage(std::string);
 	bool getHaltState();
@@ -84,6 +86,8 @@ private:
 	void handleOutInstruction(instructionData& instructionObj);
 
 	bool decodeAndExecute(instructionData& instructionObj);
+	uint32_t cycleCount;
+
 	uint8_t readMemory8(uint32_t address);
 
 	uint32_t RA; // General Purpose Register
