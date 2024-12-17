@@ -90,8 +90,8 @@ std::string cpu::instructionEnumToName(instructions instr)
 			return "WRITEPTR1";
 		case instructions::ADD:
 			return "ADD";
-		case instructions::ADDI:
-			return "ADDI";
+		case instructions::DIV:
+			return "DIV";
 		case instructions::MUL:
 			return "MUL";
 		case instructions::MOV:
@@ -129,6 +129,11 @@ uint32_t cpu::popStack()
 	}
 	
 	return value;
+}
+
+uint32_t cpu::getCycleCount()
+{
+	return cycleCount;
 }
 
 void cpu::pushStack(uint32_t value)
@@ -271,7 +276,8 @@ void cpu::handleOutInstruction(instructionData& instructionObj)
 	switch (instructionObj.oprandB)
 	{
 	case 0:
-		std::cout << (char)(readGeneralRegister(instructionObj.oprandA) & 0xFF);
+		//std::cout << (char)(readGeneralRegister(instructionObj.oprandA) & 0xFF);
+		break;
 	}
 }
 
@@ -280,6 +286,23 @@ bool cpu::decodeAndExecute(instructionData& instructionObj)
 	uint32_t address;
 	switch (instructionObj.instr)
 	{
+	case instructions::INC:
+		writeGeneralRegister(instructionObj.oprandA, readGeneralRegister(instructionObj.oprandA) + 1);
+		break;
+	case instructions::DEC:
+		writeGeneralRegister(instructionObj.oprandA, readGeneralRegister(instructionObj.oprandA) - 1);
+	case instructions::PUSHREG:
+		pushStack(RA);
+		pushStack(RB);
+		pushStack(RC);
+		pushStack(RD);
+		break;
+	case instructions::POPREG:
+		RD = popStack();
+		RC = popStack();
+		RB = popStack();
+		RA = popStack();
+		break;
 	case instructions::RET:
 		PC = popStack();
 		break;
@@ -324,8 +347,20 @@ bool cpu::decodeAndExecute(instructionData& instructionObj)
 	case instructions::READPTR1: // arg1: Reg Index PTR / arg2: Reg Index Ouput
 		writeGeneralRegister(instructionObj.oprandA, readMemory8(readGeneralRegister(instructionObj.oprandB)));
 		break;
+	case instructions::SUB:
+		writeGeneralRegister(instructionObj.oprandA, readGeneralRegister(instructionObj.oprandA) - readGeneralRegister(instructionObj.oprandB));
+		break;
 	case instructions::ADD:
-		writeGeneralRegister(instructionObj.oprandA, readGeneralRegister(instructionObj.oprandB) + readGeneralRegister(instructionObj.oprandC));
+		writeGeneralRegister(instructionObj.oprandA, readGeneralRegister(instructionObj.oprandA) + readGeneralRegister(instructionObj.oprandB));
+		break;
+	case instructions::XOR:
+		writeGeneralRegister(instructionObj.oprandA, readGeneralRegister(instructionObj.oprandA) ^ readGeneralRegister(instructionObj.oprandB));
+		break;
+	case instructions::AND:
+		writeGeneralRegister(instructionObj.oprandA, readGeneralRegister(instructionObj.oprandA) & readGeneralRegister(instructionObj.oprandB));
+		break;
+	case instructions::OR:
+		writeGeneralRegister(instructionObj.oprandA, readGeneralRegister(instructionObj.oprandA) | readGeneralRegister(instructionObj.oprandB));
 		break;
 	case instructions::JMPIMM:
 		if (instructionObj.oprandA < CPU_AVALIABLE_MEMORY)

@@ -43,14 +43,14 @@ public:
 		WRITEPTR4  = 0x0e,	  // arg1: Reg Index PTR / arg2: Reg Index Value
 		WRITEPTR2  = 0x0f,	  // arg1: Reg Index PTR / arg2: Reg Index Value
 		WRITEPTR1  = 0x10,	  // arg1: Reg Index PTR / arg2: Reg Index Value
-/*done*/ADD        = 0x11,	  // arg1: Reg Index Result / arg2: Reg Index Oprand A / arg3: Reg Index Oprand B
-		ADDI       = 0x12,	  // arg1: Reg Index Result / arg2: Reg Index Oprand A / arg3: Reg Index Oprand B
-		MUL        = 0x13,	  // arg1: Reg Index Result / arg2: Reg Index Oprand A / arg3: Reg Index Oprand B
-		LSHIFT	   = 0x14,    // arg1: Reg Index Result / arg2: Reg Index Oprand / arg3: Reg Index Amount
-		RSHIFT     = 0x15,	  // arg1: Reg Index Result / arg2: Reg Index Oprand / arg3: Reg Index Amount
-		XOR        = 0x16,    // arg1: Reg Index Result / arg2: Reg Index Oprand A / arg3: Reg Index Oprand B
-		AND        = 0x17,    // arg1: Reg Index Result / arg2: Reg Index Oprand A / arg3: Reg Index Oprand B
-		OR         = 0x18,    // arg1: Reg Index Result / arg2: Reg Index Oprand A / arg3: Reg Index Oprand B
+/*Done*/ADD        = 0x11,	  // arg1: Reg Index Result/Oprand A / arg2: Reg Index Oprand B
+		DIV        = 0x12,	  // arg1: Reg Index Result/Oprand A / arg2: Reg Index Oprand B
+		MUL        = 0x13,	  // arg1: Reg Index Result/Oprand A / arg2: Reg Index Oprand B
+		LSHIFT	   = 0x14,    // arg1: Reg Index Result/Oprand A / arg2: Reg Index Amount
+		RSHIFT     = 0x15,	  // arg1: Reg Index Result/Oprand A / arg2: Reg Index Amount
+/*Done*/XOR        = 0x16,    // arg1: Reg Index Result/Oprand A / arg2: Reg Index Oprand B
+/*Done*/AND        = 0x17,    // arg1: Reg Index Result/Oprand A / arg2: Reg Index Oprand B
+/*Done*/OR         = 0x18,    // arg1: Reg Index Result/Oprand A / arg2: Reg Index Oprand B
 /*Done*/MOV        = 0x19,	  // arg1: Reg Index Result / arg2: Value<32> 
 /*Done*/CMP        = 0x1a,	  // arg1: Reg Index Result / arg2: Reg Index Value 1 / arg3: Reg Index Value 2
 /*Done*/JMP        = 0x1b,	  // arg1: Reg Index Value
@@ -62,7 +62,12 @@ public:
 		IN         = 0x21,    // arg1: Reg Index Result / arg2: Address<32>
 		INT        = 0x22,	  // no oprands, take code from reg RA;
 /*Done*/HALT       = 0x23,	  // no oprand
-	};
+/*Done*/INC        = 0x24,    // arg1: Reg Index Result 
+/*Done*/DEC        = 0x25,    // arg1: Reg Index Result
+/*Done*/PUSHREG    = 0x26,    // no oprands, push all register
+/*Done*/POPREG     = 0x27,    // no oprands, pop all register
+/*Done*/SUB        = 0x28,    // arg1: Reg Index Result/Oprand A / arg2: Reg Index Oprand B
+};
 
 	static std::string instructionEnumToName(instructions instr);
 
@@ -70,6 +75,7 @@ public:
 	static uint16_t flipEndian(uint16_t n);
 
 	uint32_t popStack();
+	uint32_t getCycleCount();
 	void pushStack(uint32_t value);
 
 private:
